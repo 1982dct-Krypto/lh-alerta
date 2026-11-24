@@ -198,15 +198,22 @@
       <h1>Panel de gestión</h1>
       <p class="intro">Espacio reservado para los usuarios autorizados de LH Alerta.</p>
       <div class="card">
-        <strong>Acceso privado</strong>
-        <p class="intro">La autenticación y los permisos se conectarán con Supabase. El panel todavía no permite gestionar incidencias.</p>
-        <span class="status">Pendiente de conexión</span>
-      </div>
+  <strong>Acceso privado</strong>
+  <form id="auth-form">
+    <label for="auth-email">Correo electrónico</label>
+    <input id="auth-email" type="email" required>
+    <label for="auth-password">Contraseña</label>
+    <input id="auth-password" type="password" required>
+    <button class="primary" type="submit">Entrar</button>
+  </form>
+  <p id="auth-message" class="intro" aria-live="polite"></p>
+  <button id="logout-button" type="button">Cerrar sesión</button>
+</div>
     </section>
   </main>
 
   <footer>LH Alerta · L'Hospitalet de Llobregat</footer>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const tabs = document.querySelectorAll("nav button");
     const sections = document.querySelectorAll("main section");
@@ -219,14 +226,66 @@
         document.getElementById(button.dataset.tab).classList.add("active");
       });
     });
-
-    document.getElementById("incident-form").addEventListener("submit", event => {
-      event.preventDefault();
-      document.getElementById("form-message").textContent =
-        "Demostración: la incidencia no se ha enviado ni guardado todavía.";
-    });
 const SUPABASE_URL = "https://xfmcnjumooxcsyrzfjmj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w567JbOR5kNGBArni7-RNQ_gajQ0M4R";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function actualizarSesion() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  const mensaje = document.getElementById("auth-message");
+  mensaje.textContent = session
+    ? "Sesión iniciada: " + session.user.email
+    : "Inicia sesión para acceder.";
+}
+
+document.getElementById("auth-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const mensaje = document.getElementById("auth-message");
+  mensaje.textContent = "Conectando...";
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email: document.getElementById("auth-email").value,
+    password: document.getElementById("auth-password").value
+  });
+  mensaje.textContent = error ? "No se pudo iniciar sesión. Comprueba los datos." : "Sesión iniciada correctamente.";
+  if (!error) actualizarSesion();
+});
+
+document.getElementById("logout-button").addEventListener("click", async () => {
+  await supabaseClient.auth.signOut();
+  actualizarSesion();
+});
+
+document.getElementById("incident-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const mensaje = document.getElementById("form-message");
+  mensaje.textContent = "Guardando incidencia...";
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (!session) {
+    mensaje.textContent = "Primero inicia sesión en Panel privado.";
+    return;
+  }
+
+  const { error } = await supabaseClient.from("incidents").insert({
+    owner_id: session.user.id,
+    source: "incidencias",
+    category: document.getElementById("category").value,
+    neighborhood: document.getElementById("neighborhood").value,
+    description: document.getElementById("description").value
+  });
+
+  if (error) {
+    mensaje.textContent = "No se ha podido guardar. Inténtalo de nuevo.";
+    console.error(error);
+    return;
+  }
+
+  document.getElementById("incident-form").reset();
+  mensaje.textContent = "Incidencia recibida y guardada de forma privada. Pendiente de revisión.";
+});
+
+actualizarSesion();
+
 
 async function cargarRadar() {
   const lista = document.getElementById("radar-list");
