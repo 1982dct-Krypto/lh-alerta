@@ -254,12 +254,12 @@ document.getElementById("auth-form").addEventListener("submit", async event => {
   });
   mensaje.textContent = error ? "No se pudo iniciar sesión. Comprueba los datos." : "Sesión iniciada correctamente.";
   if (!error) actualizarSesion();
-});
-if (!error) cargarGestionIncidencias();
+if (!error) cargarGestionIncidencias();});
+
 document.getElementById("logout-button").addEventListener("click", async () => {
   await supabaseClient.auth.signOut();
   actualizarSesion();
-});
+document.getElementById("admin-incidents-list").replaceChildren();});
 
 document.getElementById("incident-form").addEventListener("submit", async event => {
   event.preventDefault();
