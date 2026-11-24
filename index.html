@@ -1,1 +1,231 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10243a">
+  <title>LH Alerta | L'Hospitalet</title>
+  <style>
+    :root {
+      --navy: #10243a;
+      --blue: #1769aa;
+      --light: #f2f5f8;
+      --white: #ffffff;
+      --text: #243447;
+      --muted: #687789;
+      --border: #dce3ea;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--light);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+    }
+    header {
+      background: var(--navy);
+      color: white;
+      padding: 25px 18px;
+    }
+    .header-inner, main {
+      max-width: 850px;
+      margin: auto;
+    }
+    .brand {
+      font-size: 27px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      margin-top: 7px;
+      color: #c8d7e6;
+      font-size: 14px;
+    }
+    nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+    }
+    nav button {
+      flex: 1;
+      min-width: 105px;
+      padding: 12px 10px;
+      border: 0;
+      border-radius: 8px;
+      background: #edf2f7;
+      color: var(--navy);
+      font-weight: bold;
+      cursor: pointer;
+    }
+    nav button.active {
+      background: var(--blue);
+      color: white;
+    }
+    main { padding: 20px 14px 45px; }
+    section { display: none; }
+    section.active { display: block; }
+    h1 { font-size: 23px; margin-top: 8px; }
+    .intro {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 18px;
+      margin: 14px 0;
+      box-shadow: 0 2px 8px #10243a0a;
+    }
+    .status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      background: #e8f4ed;
+      color: #287348;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5df;
+      border-radius: 8px;
+      font: inherit;
+      background: white;
+    }
+    textarea { min-height: 115px; resize: vertical; }
+    .primary {
+      width: 100%;
+      margin-top: 16px;
+      padding: 14px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--blue);
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .notice {
+      background: #edf4fb;
+      border-left: 4px solid var(--blue);
+      padding: 13px;
+      border-radius: 5px;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 20px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand">LH ALERTA</div>
+      <div class="subtitle">Una plataforma ciudadana para L'Hospitalet de Llobregat</div>
+    </div>
+  </header>
+
+  <nav aria-label="Secciones principales">
+    <button class="active" data-tab="radar">Radar</button>
+    <button data-tab="incidencias">Incidencias</button>
+    <button data-tab="panel">Panel privado</button>
+  </nav>
+
+  <main>
+    <section id="radar" class="active">
+      <h1>Radar ciudadano</h1>
+      <p class="intro">Consulta las incidencias comunicadas por los vecinos y su evolución.</p>
+      <div class="notice">
+        Esta es la primera versión de LH Alerta. El mapa y los datos públicos se conectarán a Supabase en la siguiente fase.
+      </div>
+      <div id="radar-list">
+        <div class="card">
+          <strong>Radar preparado</strong>
+          <p class="intro">Todavía no hay incidencias públicas para mostrar.</p>
+          <span class="status">En preparación</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="incidencias">
+      <h1>Comunicar una incidencia</h1>
+      <p class="intro">Ayúdanos a detectar y mejorar los problemas del municipio.</p>
+      <div class="notice">
+        Formulario de demostración: todavía no envía información ni guarda datos.
+      </div>
+      <form id="incident-form">
+        <label for="category">Tipo de incidencia</label>
+        <select id="category" required>
+          <option value="">Selecciona una categoría</option>
+          <option>Limpieza</option>
+          <option>Alumbrado</option>
+          <option>Vía pública y aceras</option>
+          <option>Parques y jardines</option>
+          <option>Seguridad y convivencia</option>
+          <option>Movilidad y transporte</option>
+          <option>Equipamientos públicos</option>
+          <option>Otros</option>
+        </select>
+
+        <label for="neighborhood">Barrio</label>
+        <input id="neighborhood" placeholder="Ej. Collblanc" required>
+
+        <label for="description">Descripción</label>
+        <textarea id="description" placeholder="Explica qué sucede y dónde..." required></textarea>
+
+        <button class="primary" type="submit">Enviar incidencia</button>
+      </form>
+      <p id="form-message" class="intro" aria-live="polite"></p>
+    </section>
+
+    <section id="panel">
+      <h1>Panel de gestión</h1>
+      <p class="intro">Espacio reservado para los usuarios autorizados de LH Alerta.</p>
+      <div class="card">
+        <strong>Acceso privado</strong>
+        <p class="intro">La autenticación y los permisos se conectarán con Supabase. El panel todavía no permite gestionar incidencias.</p>
+        <span class="status">Pendiente de conexión</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>LH Alerta · L'Hospitalet de Llobregat</footer>
+
+  <script>
+    const tabs = document.querySelectorAll("nav button");
+    const sections = document.querySelectorAll("main section");
+
+    tabs.forEach(button => {
+      button.addEventListener("click", () => {
+        tabs.forEach(item => item.classList.remove("active"));
+        sections.forEach(item => item.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(button.dataset.tab).classList.add("active");
+      });
+    });
+
+    document.getElementById("incident-form").addEventListener("submit", event => {
+      event.preventDefault();
+      document.getElementById("form-message").textContent =
+        "Demostración: la incidencia no se ha enviado ni guardado todavía.";
+    });
+  </script>
+</body>
+</html>
+
