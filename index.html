@@ -209,6 +209,12 @@
   <p id="auth-message" class="intro" aria-live="polite"></p>
   <button id="logout-button" type="button">Cerrar sesión</button>
 </div>
+      <div class="card" id="admin-incidents-card">
+  <h3>Incidencias recibidas</h3>
+  <p id="admin-incidents-message">Inicia sesión para consultar las incidencias.</p>
+  <button type="button" id="refresh-incidents-button">Actualizar lista</button>
+  <div id="admin-incidents-list"></div>
+      </div>
     </section>
   </main>
 
@@ -249,7 +255,7 @@ document.getElementById("auth-form").addEventListener("submit", async event => {
   mensaje.textContent = error ? "No se pudo iniciar sesión. Comprueba los datos." : "Sesión iniciada correctamente.";
   if (!error) actualizarSesion();
 });
-
+if (!error) cargarGestionIncidencias();
 document.getElementById("logout-button").addEventListener("click", async () => {
   await supabaseClient.auth.signOut();
   actualizarSesion();
@@ -285,7 +291,7 @@ document.getElementById("incident-form").addEventListener("submit", async event 
 });
 
 actualizarSesion();
-
+document.getElementById("admin-incidents-list").replaceChildren();
 
 async function cargarRadar() {
   const lista = document.getElementById("radar-list");
@@ -338,8 +344,64 @@ async function cargarRadar() {
     console.error(error);
   }
 }
+    async function cargarGestionIncidencias() {
+  const mensaje = document.getElementById("admin-incidents-message");
+  const lista = document.getElementById("admin-incidents-list");
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (!session) {
+    mensaje.textContent = "Inicia sesión para consultar las incidencias.";
+    lista.replaceChildren();
+    return;
+  }
+
+  mensaje.textContent = "Cargando incidencias...";
+  lista.replaceChildren();
+
+  const { data, error } = await supabaseClient
+    .from("incidents")
+    .select("public_code, category, description, neighborhood, status, publication, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    mensaje.textContent = "No se pueden consultar las incidencias con los permisos actuales.";
+    console.error(error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    mensaje.textContent = "No hay incidencias visibles para esta cuenta.";
+    return;
+  }
+
+  mensaje.textContent = "Incidencias encontradas: " + data.length;
+
+  data.forEach(incidencia => {
+    const tarjeta = document.createElement("div");
+    tarjeta.className = "incident-item";
+
+    const titulo = document.createElement("h4");
+    titulo.textContent = incidencia.public_code + " — " + incidencia.category;
+
+    const detalle = document.createElement("p");
+    detalle.textContent = incidencia.description;
+
+    const barrio = document.createElement("p");
+    barrio.textContent = "Barrio: " + (incidencia.neighborhood || "No indicado");
+
+    const estado = document.createElement("p");
+    estado.textContent = "Estado: " + incidencia.status + " · Publicación: " + incidencia.publication;
+
+    tarjeta.append(titulo, detalle, barrio, estado);
+    lista.appendChild(tarjeta);
+  });
+}
+
+document.getElementById("refresh-incidents-button")
+  .addEventListener("click", cargarGestionIncidencias);
 
 cargarRadar();
+    cargarGestionIncidencias();
 </script>
 </body>
 </html>
